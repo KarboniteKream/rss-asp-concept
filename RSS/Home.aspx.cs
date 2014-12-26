@@ -23,7 +23,7 @@ namespace RSS
             Session["Location"] = "feed";
             Session["FeedID"] = 1;
 
-            MySqlConnection connection = new MySqlConnection("server=localhost;database=rss;userid=root;password=gasilec");
+            MySqlConnection connection = new MySqlConnection("server=kream.io;database=rss;userid=root;password=gasilec");
             connection.Open();
 
             MySqlCommand command = connection.CreateCommand();
