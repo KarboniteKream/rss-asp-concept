@@ -23,6 +23,9 @@
 			</nav>
 		</header>
         <main>
+            <form runat="server">
+                <asp:Button ID="qwe" runat="server" OnClick="qwe_Click" />
+            </form>
 			<div id="banner">the next-generation <span class="rss">RSS</span> reader</div>
 			<div id="landing">
 				<div>

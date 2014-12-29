@@ -13,5 +13,13 @@ namespace RSS
         {
             
         }
+
+        protected void qwe_Click(object sender, EventArgs e)
+        {
+            Session["userID"] = 1;
+            Session["location"] = "feed";
+            Session["feedID"] = 25;
+            Response.Redirect("Home.aspx");
+        }
     }
 }

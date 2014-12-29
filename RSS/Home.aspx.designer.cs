@@ -31,12 +31,21 @@ namespace RSS {
         protected global::System.Web.UI.WebControls.Label feedName;
         
         /// <summary>
-        /// readerView control.
+        /// scriptManager control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView readerView;
+        protected global::System.Web.UI.ScriptManager scriptManager;
+        
+        /// <summary>
+        /// reader control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel reader;
     }
 }

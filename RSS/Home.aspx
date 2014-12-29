@@ -38,10 +38,10 @@
 				<div id="sidebar-content">
 					<div id="menu">
 						<ul>
-							<li><a id="home" href="#">Home</a></li>
-                            <li><a id="unread" href="#">Unread</a></li>
-                            <li><a id="liked" href="#">Liked</a></li>
-                            <li><a id="all" href="#">All articles</a></li>
+							<li><a id="home" onclick="PageMethods.changeFeed('home', '-1');location.reload();">Home</a></li>
+                            <li><a id="unread" onclick="PageMethods.changeFeed('unread', '-2');location.reload();">Unread</a></li>
+                            <li><a id="liked" onclick="PageMethods.changeFeed('liked', '-3');location.reload();">Liked</a></li>
+                            <li><a id="all" onclick="PageMethods.changeFeed('all', '-4');location.reload();">All articles</a></li>
 						</ul>
 					</div>
                     <asp:Panel id="subscriptions" runat="server"/>
@@ -54,12 +54,10 @@
 					<span class="button-secondary open-popup" target-popup="#unsubscribe">Unsubscribe</span>
 					<h2 id="feed-name"><asp:label id="feedName" runat="server" /></h2>
 				</div>
-				<div id="reader">
-                    <form runat="server">
-                        <asp:GridView ID="readerView" runat="server">
-                        </asp:GridView>
-                    </form>
-				</div>
+                <form runat="server">
+                    <asp:ScriptManager ID="scriptManager" runat="server" EnablePageMethods="true" />
+                    <asp:Panel id="reader" runat="server" />
+                </form>
 			</div>
 		</div>
 		<div id="overlay" onclick="hideOverlay()"></div>
