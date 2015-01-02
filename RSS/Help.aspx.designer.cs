@@ -10,7 +10,7 @@
 namespace RSS {
     
     
-    public partial class Home {
+    public partial class Help {
         
         /// <summary>
         /// menuItems control.
@@ -31,15 +31,6 @@ namespace RSS {
         protected global::System.Web.UI.WebControls.Panel subscriptions;
         
         /// <summary>
-        /// header control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel header;
-        
-        /// <summary>
         /// scriptManager control.
         /// </summary>
         /// <remarks>
@@ -47,23 +38,5 @@ namespace RSS {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.ScriptManager scriptManager;
-        
-        /// <summary>
-        /// reader control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel reader;
-        
-        /// <summary>
-        /// feedNameUnsubscribe control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label feedNameUnsubscribe;
     }
 }

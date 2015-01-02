@@ -17,6 +17,7 @@ namespace RSS
         private static MySqlCommand command = null;
         private static MySqlDataReader result = null;
 
+        private string unreadCount = "";
         private string connectionString = "server=3020f0c4-873a-49b6-b007-a3ff00933a9e.mysql.sequelizer.com;database=db3020f0c4873a49b6b007a3ff00933a9e;userid=evvbdlzgyodaumqz;password=iGSHBCF2WwpzrmRXjhhCbUTiDfjnk3c3MvECQzWQt8pTnD7VZsZNwi3wVHevstQ3";
 
         protected void Page_Load(object sender, EventArgs e)
@@ -31,21 +32,63 @@ namespace RSS
 
             loadSidebar();
 
+            if(Session["Location"].Equals("home") == false)
+            {
+                HtmlGenericControl button = new HtmlGenericControl("span");
+                button.Attributes["class"] = "button-primary";
+                button.InnerText = "Refresh";
+                header.Controls.Add(button);
+
+                button = new HtmlGenericControl("span");
+                button.Attributes["class"] = "button-secondary";
+                button.InnerText = "Settings";
+                header.Controls.Add(button);
+
+                button = new HtmlGenericControl("span");
+                button.Attributes["class"] = "button-secondary open-popup";
+                button.Attributes["target-popup"] = "#unsubscribe";
+                button.InnerText = "Unsubscribe";
+                header.Controls.Add(button);
+            }
+            else
+            {
+                HtmlGenericControl headerSecondary = new HtmlGenericControl("div");
+                headerSecondary.Attributes["class"] = "header-secondary";
+
+                HtmlGenericControl refresh = new HtmlGenericControl("span");
+                refresh.Attributes["class"] = "button-primary";
+                refresh.InnerText = "Refresh";
+                headerSecondary.Controls.Add(refresh);
+
+                HtmlGenericControl title = new HtmlGenericControl("h2");
+                title.InnerText = "Featured articles";
+                headerSecondary.Controls.Add(title);
+
+                HtmlGenericControl settings = new HtmlGenericControl("span");
+                settings.Attributes["class"] = "button-secondary";
+                settings.InnerText = "Settings";
+
+                header.Controls.Add(headerSecondary);
+                header.Controls.Add(settings);
+            }
+
+            HtmlGenericControl feedName = new HtmlGenericControl("h2");
+
             if(Session["location"].Equals("home") == true)
             {
-                feedName.Text = "Home";
+                feedName.InnerText = "Home";
             }
             else if(Session["location"].Equals("unread") == true)
             {
-                feedName.Text = "Unread";
+                feedName.InnerText = "Unread";
             }
             else if(Session["location"].Equals("liked") == true)
             {
-                feedName.Text = "Liked";
+                feedName.InnerText = "Liked";
             }
             else if(Session["location"].Equals("all") == true)
             {
-                feedName.Text = "All articles";
+                feedName.InnerText = "All articles";
             }
             else
             {
@@ -56,11 +99,13 @@ namespace RSS
                 result = command.ExecuteReader();
                 result.Read();
 
-                feedName.Text = result.GetString("name");
+                feedName.InnerText = result.GetString("name");
                 feedNameUnsubscribe.Text = result.GetString("name");
 
                 result.Close();
             }
+
+            header.Controls.Add(feedName);
 
             if(Session["Location"].Equals("home") == false)
             {
@@ -103,6 +148,20 @@ namespace RSS
             a.Attributes["class"] = Session["location"].Equals(a.ID) == true ? "active" : "";
             a.InnerHtml = "Unread";
             li.Controls.Add(a);
+
+            HtmlGenericControl unread = new HtmlGenericControl("span");
+            unread.Attributes["class"] = "badge";
+
+            command = connection.CreateCommand();
+            command.CommandText = "SELECT COUNT(article_id) AS unread FROM Unread WHERE user_id = @userID";
+            command.Parameters.AddWithValue("@userID", Session["userID"]);
+            result = command.ExecuteReader();
+            result.Read();
+            unread.InnerText = " " + result.GetString("unread");
+            unreadCount = result.GetString("unread");
+            result.Close();
+            li.Controls.Add(unread);
+
             menuItems.Controls.Add(li);
 
             li = new HtmlGenericControl("li");
@@ -149,7 +208,7 @@ namespace RSS
 
                 if(result.IsDBNull(3) == false)
                 {
-                    HtmlGenericControl unread = new HtmlGenericControl("span");
+                    unread = new HtmlGenericControl("span");
                     unread.Attributes["class"] = "badge";
                     unread.InnerHtml = " " + result.GetString("unread");
                     feed.Controls.Add(unread);
@@ -220,7 +279,7 @@ namespace RSS
 
                 if(result.IsDBNull(3) == false)
                 {
-                    HtmlGenericControl unread = new HtmlGenericControl("span");
+                    unread = new HtmlGenericControl("span");
                     unread.Attributes["class"] = "badge";
                     unread.InnerHtml = " " + result.GetString("unread");
                     feed.Controls.Add(unread);
@@ -266,7 +325,6 @@ namespace RSS
             while(result.Read() == true)
             {
                 HtmlGenericControl article = new HtmlGenericControl("article");
-                article.ID = result.GetString("id");
 
                 if(Session["location"].Equals("unread") == true || Session["location"].Equals("feed") == true)
                 {
@@ -352,7 +410,77 @@ namespace RSS
 
         private void loadFeatured()
         {
+            HtmlGenericControl homeLeft = new HtmlGenericControl("div");
+            homeLeft.Attributes["class"] = "home-left";
+
+            HtmlGenericControl unreadNotice = new HtmlGenericControl("h2");
+            unreadNotice.Attributes["class"] = "notice";
+            unreadNotice.InnerText = "You have " + unreadCount + " unread articles.";
+            homeLeft.Controls.Add(unreadNotice);
             
+            HtmlGenericControl widgets = new HtmlGenericControl("div");
+            widgets.ID = "widgets";
+            HtmlImage xkcd = new HtmlImage();
+            xkcd.Src = "http://imgs.xkcd.com/comics/time.png";
+            xkcd.Attributes["title"] = "The end.";
+            xkcd.Alt = "Current time is unknown.";
+            widgets.Controls.Add(xkcd);
+            homeLeft.Controls.Add(widgets);
+
+            reader.Controls.Add(homeLeft);
+
+            HtmlGenericControl homeRight = new HtmlGenericControl("div");
+            homeRight.Attributes["class"] = "home-right";
+
+            command = connection.CreateCommand();
+            command.CommandText = "SELECT a.id, a.title, a.url, a.author, a.date, a.content FROM Liked l JOIN Articles a ON l.article_id = a.id GROUP BY l.article_id ORDER BY COUNT(l.article_id) DESC";
+            result = command.ExecuteReader();
+
+            while(result.Read() == true)
+            {
+                HtmlGenericControl article = new HtmlGenericControl("article");
+
+                HtmlGenericControl date = new HtmlGenericControl("div");
+                date.Attributes["class"] = "date";
+                date.InnerHtml = result.GetString("date").Substring(0, 10);
+                article.Controls.Add(date);
+
+                HtmlGenericControl title = new HtmlGenericControl("h2");
+                HtmlGenericControl titleLink = new HtmlGenericControl("a");
+                titleLink.Attributes["href"] = result.GetString("url");
+                titleLink.InnerHtml = result.GetString("title");
+                title.Controls.Add(titleLink);
+                article.Controls.Add(title);
+
+                if(result.IsDBNull(3) == false)
+                {
+                    HtmlGenericControl author = new HtmlGenericControl("div");
+                    author.Attributes["class"] = "author";
+                    author.InnerHtml = "by <b>" + result.GetString("author") + "</b>";
+                    article.Controls.Add(author);
+                }
+
+                HtmlGenericControl content = new HtmlGenericControl("div");
+                content.Attributes["class"] = "content";
+                content.InnerHtml = "<p>" + result.GetString("content") + "</p>";
+                article.Controls.Add(content);
+
+                HtmlGenericControl actionBar = new HtmlGenericControl("div");
+                actionBar.Attributes["class"] = "action-bar";
+
+                HtmlAnchor likeButton = new HtmlAnchor();
+                likeButton.Attributes["onclick"] = "PageMethods.like(\"" + result.GetString("id") + "\")";
+                likeButton.InnerHtml = "Like";
+
+                actionBar.Controls.Add(likeButton);
+                article.Controls.Add(actionBar);
+
+                homeRight.Controls.Add(article);
+            }
+
+            result.Close();
+
+            reader.Controls.Add(homeRight);
         }
 
         [WebMethod]
@@ -456,6 +584,14 @@ namespace RSS
 
             HttpContext.Current.Session["location"] = "home";
             HttpContext.Current.Session["feedID"] = "-1";
+        }
+
+        [WebMethod]
+        public static void signOut()
+        {
+            HttpContext.Current.Session["userID"] = null;
+            HttpContext.Current.Session["location"] = null;
+            HttpContext.Current.Session["feedID"] = null;
         }
     }
 }

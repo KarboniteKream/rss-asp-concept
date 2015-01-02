@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Home.aspx.cs" Inherits="RSS.Home" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Help.aspx.cs" Inherits="RSS.Help" %>
 
 <!DOCTYPE html>
 
@@ -17,9 +17,9 @@
 			<h1><a href="/home.aspx">kream.io</a><span class="version"> rss</span></h1>
 			<nav>
                 <ul>
-				    <li><a href="/Home.aspx" class="active">Home</a></li>
+				    <li><a href="/Home.aspx">Home</a></li>
 				    <li><a href="/Settings.aspx">Settings</a></li>
-				    <li><a href="/Help.aspx">Help</a></li>
+				    <li><a href="/Help.aspx" class="active">Help</a></li>
 				    <li><a onclick="PageMethods.signOut();window.location='/';" runat="server">Sign out</a></li>
 			    </ul>
 			</nav>
@@ -45,26 +45,16 @@
 				</div>
 			</div>
 			<div id="content">
-				<form runat="server">
-                    <asp:Panel id="header" CssClass="header" runat="server" />
-                    <asp:ScriptManager ID="scriptManager" runat="server" EnablePageMethods="true" />
-                    <asp:Panel id="reader" runat="server" />
-                </form>
+                <div class="header">
+                    <h2>Help</h2>
+                </div>
+				<div id="reader">
+                    <form runat="server">
+                        <asp:ScriptManager ID="scriptManager" runat="server" EnablePageMethods="true" />
+                        <div id="banner">work in progress</div>
+                    </form>
+				</div>
 			</div>
-		</div>
-		<div id="overlay" onclick="hideOverlay()"></div>
-		<div id="unsubscribe" class="popup">
-			<div class="header">
-				<span class="button-secondary" onclick="hideOverlay()">×</span>
-				<h3>Unsubscribe</h3>
-			</div>
-			<form method="post">
-				<fieldset>
-					<span id="form-question">Are you sure you want to unsubscribe from <asp:Label id="feedNameUnsubscribe" runat="server" />?</span>
-					<button type="submit" onclick="PageMethods.unsubscribe()">Yes</button>
-					<button type="button" class="button-secondary" onclick="hideOverlay()" tabindex="1">No</button>
-				</fieldset>
-			</form>
 		</div>
     </body>
 </html>

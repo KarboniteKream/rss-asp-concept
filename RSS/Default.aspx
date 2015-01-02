@@ -25,19 +25,17 @@
         <main>
             <form runat="server">
                 <asp:Button ID="qwe" runat="server" OnClick="qwe_Click" />
+                <div id="banner">the next-generation <span class="rss">RSS</span> reader</div>
+		        <div id="landing">
+			        <div>
+				        <div class="header">
+					        <span id="fullscreen" class="button-primary">v</span>
+					        <h2>Featured articles</h2>
+				        </div>
+					    <asp:Panel id="featured" runat="server" />
+			        </div>
+		        </div>
             </form>
-			<div id="banner">the next-generation <span class="rss">RSS</span> reader</div>
-			<div id="landing">
-				<div>
-					<div class="header">
-						<span id="fullscreen" class="button-primary">v</span>
-						<h2>Featured articles</h2>
-					</div>
-					<div id="featured">
-						
-					</div>
-				</div>
-			</div>
 		</main>
         <div id="overlay" onclick="hideOverlay()"></div>
         <div id="sign-in" class="popup">

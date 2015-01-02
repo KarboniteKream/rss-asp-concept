@@ -10,24 +10,24 @@
 namespace RSS {
     
     
-    public partial class Default {
+    public partial class Settings {
         
         /// <summary>
-        /// qwe control.
+        /// menuItems control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button qwe;
+        protected global::System.Web.UI.WebControls.Panel menuItems;
         
         /// <summary>
-        /// featured control.
+        /// subscriptions control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel featured;
+        protected global::System.Web.UI.WebControls.Panel subscriptions;
     }
 }
