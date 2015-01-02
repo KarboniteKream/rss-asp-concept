@@ -38,10 +38,7 @@
 				<div id="sidebar-content">
 					<div id="menu">
 						<ul>
-							<li><a id="home" onclick="PageMethods.changeFeed('home', '-1');location.reload();">Home</a></li>
-                            <li><a id="unread" onclick="PageMethods.changeFeed('unread', '-2');location.reload();">Unread</a></li>
-                            <li><a id="liked" onclick="PageMethods.changeFeed('liked', '-3');location.reload();">Liked</a></li>
-                            <li><a id="all" onclick="PageMethods.changeFeed('all', '-4');location.reload();">All articles</a></li>
+							<asp:Panel id="menuItems" runat="server" />
 						</ul>
 					</div>
                     <asp:Panel id="subscriptions" runat="server"/>
@@ -68,9 +65,9 @@
 			</div>
 			<form method="post">
 				<fieldset>
-					<span id="form-question">Are you sure you want to unsubscribe from FEED NAME?</span>
-					UNSUBSCRIBE BUTTON
-					<button id="unsubscribe-button" type="button" class="button-secondary" onclick="hideOverlay()" tabindex="1">No</button>
+					<span id="form-question">Are you sure you want to unsubscribe from <asp:Label id="feedNameUnsubscribe" runat="server" />?</span>
+					<button type="submit" onclick="PageMethods.unsubscribe()">Yes</button>
+					<button type="button" class="button-secondary" onclick="hideOverlay()" tabindex="1">No</button>
 				</fieldset>
 			</form>
 		</div>

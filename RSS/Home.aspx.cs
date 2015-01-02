@@ -13,9 +13,9 @@ namespace RSS
 {
     public partial class Home : System.Web.UI.Page
     {
-        private MySqlConnection connection = null;
-        private MySqlCommand command = null;
-        private MySqlDataReader result = null;
+        private static MySqlConnection connection = null;
+        private static MySqlCommand command = null;
+        private static MySqlDataReader result = null;
 
         private string connectionString = "server=3020f0c4-873a-49b6-b007-a3ff00933a9e.mysql.sequelizer.com;database=db3020f0c4873a49b6b007a3ff00933a9e;userid=evvbdlzgyodaumqz;password=iGSHBCF2WwpzrmRXjhhCbUTiDfjnk3c3MvECQzWQt8pTnD7VZsZNwi3wVHevstQ3";
 
@@ -23,11 +23,105 @@ namespace RSS
         {
             if(Session["userID"] == null)
             {
-                // Response.Redirect("/");
+                Response.Redirect("/");
             }
 
             connection = new MySqlConnection(connectionString);
             connection.Open();
+
+            loadSidebar();
+
+            if(Session["location"].Equals("home") == true)
+            {
+                feedName.Text = "Home";
+            }
+            else if(Session["location"].Equals("unread") == true)
+            {
+                feedName.Text = "Unread";
+            }
+            else if(Session["location"].Equals("liked") == true)
+            {
+                feedName.Text = "Liked";
+            }
+            else if(Session["location"].Equals("all") == true)
+            {
+                feedName.Text = "All articles";
+            }
+            else
+            {
+                command = connection.CreateCommand();
+                command.CommandText = "SELECT name FROM Feeds WHERE id = @feedID";
+                command.Parameters.AddWithValue("@feedID", Session["feedID"]);
+
+                result = command.ExecuteReader();
+                result.Read();
+
+                feedName.Text = result.GetString("name");
+                feedNameUnsubscribe.Text = result.GetString("name");
+
+                result.Close();
+            }
+
+            if(Session["Location"].Equals("home") == false)
+            {
+                loadArticles();
+            }
+            else
+            {
+                loadFeatured();
+            }
+
+            /*command = connection.CreateCommand();
+            command.CommandText = "SELECT id, real_name, email, cookie FROM Users";
+            //command.Parameters.AddWithValue("@id", Session["userID"]);
+
+            DataTable dataTable = new DataTable();
+            MySqlDataAdapter adapter = new MySqlDataAdapter(command);
+            adapter.Fill(dataTable);
+            
+            readerView.DataSource = dataTable;
+            readerView.DataBind();*/
+
+            connection.Close();
+        }
+
+        private void loadSidebar()
+        {
+            HtmlGenericControl li = new HtmlGenericControl("li");
+            HtmlGenericControl a = new HtmlGenericControl("a");
+            a.ID = "home";
+            a.Attributes["onclick"] = "PageMethods.changeFeed(\"" + a.ID + "\", \"-1\");location.reload();";
+            a.Attributes["class"] = Session["location"].Equals(a.ID) == true ? "active" : "";
+            a.InnerHtml = "Home";
+            li.Controls.Add(a);
+            menuItems.Controls.Add(li);
+
+            li = new HtmlGenericControl("li");
+            a = new HtmlGenericControl("a");
+            a.ID = "unread";
+            a.Attributes["onclick"] = "PageMethods.changeFeed(\"" + a.ID + "\", \"-2\");location.reload();";
+            a.Attributes["class"] = Session["location"].Equals(a.ID) == true ? "active" : "";
+            a.InnerHtml = "Unread";
+            li.Controls.Add(a);
+            menuItems.Controls.Add(li);
+
+            li = new HtmlGenericControl("li");
+            a = new HtmlGenericControl("a");
+            a.ID = "liked";
+            a.Attributes["onclick"] = "PageMethods.changeFeed(\"" + a.ID + "\", \"-3\");location.reload();";
+            a.Attributes["class"] = Session["location"].Equals(a.ID) == true ? "active" : "";
+            a.InnerHtml = "Liked";
+            li.Controls.Add(a);
+            menuItems.Controls.Add(li);
+
+            li = new HtmlGenericControl("li");
+            a = new HtmlGenericControl("a");
+            a.ID = "all";
+            a.Attributes["onclick"] = "PageMethods.changeFeed(\"" + a.ID + "\", \"-4\");location.reload();";
+            a.Attributes["class"] = Session["location"].Equals(a.ID) == true ? "active" : "";
+            a.InnerHtml = "All articles";
+            li.Controls.Add(a);
+            menuItems.Controls.Add(li);
 
             command = connection.CreateCommand();
             command.CommandText = "SELECT f.id, f.name, f.icon, u.unread FROM Subscriptions s JOIN Feeds f ON s.feed_id = f.id LEFT JOIN (SELECT a.feed_id, COUNT(a.feed_id) AS unread FROM Unread JOIN Articles a ON article_id = a.id WHERE user_id = @userID GROUP BY feed_id) AS u ON f.id = u.feed_id WHERE s.user_id = @userID AND s.folder IS NULL ORDER BY f.name";
@@ -139,35 +233,10 @@ namespace RSS
 
             subscriptions.Controls.Add(folders);
             result.Close();
+        }
 
-            if(Session["location"].Equals("home") == true)
-            {
-                feedName.Text = "Home";
-            }
-            else if(Session["location"].Equals("unread") == true)
-            {
-                feedName.Text = "Unread";
-            }
-            else if(Session["location"].Equals("liked") == true)
-            {
-                feedName.Text = "Liked";
-            }
-            else if(Session["location"].Equals("all") == true)
-            {
-                feedName.Text = "All articles";
-            }
-            else
-            {
-                command = connection.CreateCommand();
-                command.CommandText = "SELECT name FROM Feeds WHERE id = @feedID";
-                command.Parameters.AddWithValue("@feedID", Session["feedID"]);
-
-                result = command.ExecuteReader();
-                result.Read();
-                feedName.Text = result.GetString("name");
-                result.Close();
-            }
-
+        private void loadArticles()
+        {
             command = connection.CreateCommand();
 
             if(Session["location"].Equals("unread") == true)
@@ -197,6 +266,7 @@ namespace RSS
             while(result.Read() == true)
             {
                 HtmlGenericControl article = new HtmlGenericControl("article");
+                article.ID = result.GetString("id");
 
                 if(Session["location"].Equals("unread") == true || Session["location"].Equals("feed") == true)
                 {
@@ -249,12 +319,12 @@ namespace RSS
                 HtmlAnchor likeButton = new HtmlAnchor();
                 if(article.Attributes["class"] == "liked")
                 {
-                    likeButton.Attributes["onclick"] = "PageMethods.like(\"liked\", \"" + result.GetString("id") + "\")";
+                    likeButton.Attributes["onclick"] = "PageMethods.like(\"" + result.GetString("id") + "\")";
                     likeButton.InnerHtml = "Unlike";
                 }
                 else
                 {
-                    likeButton.Attributes["onclick"] = "PageMethods.like(\"unliked\", \"" + result.GetString("id") + "\")";
+                    likeButton.Attributes["onclick"] = "PageMethods.like(\"" + result.GetString("id") + "\")";
                     likeButton.InnerHtml = "Like";
                 }
                 actionBar.Controls.Add(likeButton);
@@ -262,12 +332,12 @@ namespace RSS
                 HtmlAnchor unreadButton = new HtmlAnchor();
                 if(article.Attributes["class"] == "unread")
                 {
-                    unreadButton.Attributes["onclick"] = "PageMethods.markAsRead(\"unread\", \"" + result.GetString("id") + "\")";
+                    unreadButton.Attributes["onclick"] = "PageMethods.markAsRead(\"" + result.GetString("id") + "\")";
                     unreadButton.InnerHtml = "Mark as read";
                 }
                 else
                 {
-                    unreadButton.Attributes["onclick"] = "PageMethods.markAsRead(\"read\", \"" + result.GetString("id") + "\")";
+                    unreadButton.Attributes["onclick"] = "PageMethods.markAsRead(\"" + result.GetString("id") + "\")";
                     unreadButton.InnerHtml = "Mark as unread";
                 }
                 actionBar.Controls.Add(unreadButton);
@@ -278,45 +348,90 @@ namespace RSS
             }
 
             result.Close();
+        }
 
-            /*command = connection.CreateCommand();
-            command.CommandText = "SELECT id, real_name, email, cookie FROM Users";
-            //command.Parameters.AddWithValue("@id", Session["userID"]);
-
-            DataTable dataTable = new DataTable();
-            MySqlDataAdapter adapter = new MySqlDataAdapter(command);
-            adapter.Fill(dataTable);
+        private void loadFeatured()
+        {
             
-            readerView.DataSource = dataTable;
-            readerView.DataBind();*/
+        }
+
+        [WebMethod]
+        public static void markAsRead(string id)
+        {
+            connection.Open();
+
+            command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM Unread WHERE user_id = @userID AND article_id = @articleID";
+            command.Parameters.AddWithValue("@userID", HttpContext.Current.Session["userID"]);
+            command.Parameters.AddWithValue("@articleID", id);
+
+            result = command.ExecuteReader();
+            bool unread = result.HasRows;
+            result.Close();
+
+            if(unread == true)
+            {
+                command = connection.CreateCommand();
+                command.CommandText = "DELETE FROM Unread WHERE user_id = @userID AND article_id = @articleID";
+                command.Parameters.AddWithValue("@userID", HttpContext.Current.Session["userID"]);
+                command.Parameters.AddWithValue("@articleID", id);
+
+                command.ExecuteNonQuery();
+            }
+            else
+            {
+                command = connection.CreateCommand();
+                command.CommandText = "INSERT INTO Unread VALUES (@userID, @articleID)";
+                command.Parameters.AddWithValue("@userID", HttpContext.Current.Session["userID"]);
+                command.Parameters.AddWithValue("@articleID", id);
+
+                command.ExecuteNonQuery();
+            }
 
             connection.Close();
         }
 
         [WebMethod]
-        public static void markAsRead(string status, string id)
+        public static void like(string id)
         {
-            if(status == "unread")
-            {
-                System.Diagnostics.Debug.WriteLine("mark as read: " + id);
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine("mark as unread: " + id);
-            }
-        }
+            connection.Open();
 
-        [WebMethod]
-        public static void like(string status, string id)
-        {
-            if(status != "liked")
+            command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM Liked WHERE user_id = @userID AND article_id = @articleID";
+            command.Parameters.AddWithValue("@userID", HttpContext.Current.Session["userID"]);
+            command.Parameters.AddWithValue("@articleID", id);
+
+            result = command.ExecuteReader();
+            bool liked = result.HasRows;
+            result.Close();
+
+            if(liked == true)
             {
-                System.Diagnostics.Debug.WriteLine("like: " + id);
+                command = connection.CreateCommand();
+                command.CommandText = "DELETE FROM Liked WHERE user_id = @userID AND article_id = @articleID";
+                command.Parameters.AddWithValue("@userID", HttpContext.Current.Session["userID"]);
+                command.Parameters.AddWithValue("@articleID", id);
+
+                command.ExecuteNonQuery();
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine("unlike: " + id);
+                command = connection.CreateCommand();
+                command.CommandText = "INSERT INTO Liked VALUES (@userID, @articleID)";
+                command.Parameters.AddWithValue("@userID", HttpContext.Current.Session["userID"]);
+                command.Parameters.AddWithValue("@articleID", id);
+
+                command.ExecuteNonQuery();
+
+                command = connection.CreateCommand();
+                command.CommandText = "DELETE FROM Unread WHERE user_id = @userID AND article_id = @articleID";
+                command.Parameters.AddWithValue("@userID", HttpContext.Current.Session["userID"]);
+                command.Parameters.AddWithValue("@articleID", id);
+
+                command.ExecuteNonQuery();
             }
+
+            connection.Close();
         }
 
         [WebMethod]
@@ -324,6 +439,23 @@ namespace RSS
         {
             HttpContext.Current.Session["location"] = location;
             HttpContext.Current.Session["feedID"] = Convert.ToInt32(id);
+        }
+
+        [WebMethod]
+        public static void unsubscribe()
+        {
+            connection.Open();
+
+            command = connection.CreateCommand();
+            command.CommandText = "DELETE FROM Subscriptions WHERE user_id = @userID AND feed_id = @feedID";
+            command.Parameters.AddWithValue("@userID", HttpContext.Current.Session["userID"]);
+            command.Parameters.AddWithValue("@feedID", HttpContext.Current.Session["feedID"]);
+
+            command.ExecuteNonQuery();
+            connection.Close();
+
+            HttpContext.Current.Session["location"] = "home";
+            HttpContext.Current.Session["feedID"] = "-1";
         }
     }
 }

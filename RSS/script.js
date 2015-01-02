@@ -70,7 +70,7 @@ $(document).ready(function()
 
 	$(".action-bar a:contains('ike')").click(function()
 	{
-		$(this).parent().parent().toggleClass("liked");
+	    $(this).parent().parent().toggleClass("liked");
 		($(this).text() == "Like") ? $(this).text("Unlike") : $(this).text("Like");
 		$(this).parent().parent().removeClass("unread");
 		$(this).next().text("Mark as unread");
