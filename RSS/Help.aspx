@@ -41,7 +41,7 @@
 							<asp:Panel id="menuItems" runat="server" />
 						</ul>
 					</div>
-                    <asp:Panel id="subscriptions" runat="server"/>
+                    <asp:Panel id="subscriptions" runat="server" />
 				</div>
 			</div>
 			<div id="content">

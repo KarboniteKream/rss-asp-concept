@@ -17,7 +17,7 @@ $(document).ready(function()
 		}
 	});
 	
-	// remove 'remove' from index.html
+	// Remove "remove" from index.html.
 	$(".action-bar").append('<span class="remove-article">Remove</span>');
 
 	$(".action-bar").on("click", ".remove-article", function()
@@ -51,21 +51,9 @@ $(document).ready(function()
 		$("#add-subscription").fadeIn("fast");
 	});
 
-	$("#add-subscription button").click(function()
+	$("#add-subscription input[type='submit']").click(function()
 	{
-		$("#add-subscription").fadeOut("fast");
-
-		$.ajax
-		({
-			url: "/util.php?function=add-subscription",
-			type: "POST",
-			data: { "url": $("#add-subscription input").val() },
-			success: function(data)
-			{
-				$("#add-subscription input").val("");
-				setSortable();
-			}
-		});
+	    $("#add-subscription").fadeOut("fast");
 	});
 
 	$(".action-bar a:contains('ike')").click(function()
@@ -143,14 +131,7 @@ function validateEmail(email)
 {
 	var regex = /^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$/;
 
-	if(regex.test(email) == true)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+	return (regex.test(email) == true);
 }
 
 function hideOverlay()

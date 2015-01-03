@@ -40,7 +40,7 @@
 							<asp:Panel id="menuItems" runat="server" />
 						</ul>
 					</div>
-                    <asp:Panel id="subscriptions" runat="server"/>
+                    <asp:Panel id="subscriptions" runat="server" />
 				</div>
 			</div>
 			<div id="content">
@@ -51,7 +51,10 @@
                     <h2>Settings</h2>
                 </div>
 				<div id="reader">
-                    <div id="banner">work in progress</div>
+                    <form runat="server">
+                        <asp:ScriptManager ID="scriptManager" runat="server" EnablePageMethods="true" />
+                        <div id="banner">work in progress</div>
+                    </form>
 				</div>
 			</div>
 		</div>

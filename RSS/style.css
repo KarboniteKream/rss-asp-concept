@@ -206,7 +206,7 @@ p
 	border-radius: 5px;
 }
 
-#add-subscription input
+#add-subscription input:not([type="submit"])
 {
 	width: 155px;
 	margin-top: 5px;
@@ -215,7 +215,7 @@ p
 	padding-left: 6px;
 }
 
-#add-subscription button
+#add-subscription input[type="submit"]
 {
 	width: 47px;
 	height: 28px;
@@ -950,3 +950,5 @@ fieldset select
 	margin: 0px;
 	margin-top: 4px;
 }
+
+

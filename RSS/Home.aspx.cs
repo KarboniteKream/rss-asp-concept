@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Net;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
 using System.Web.Services;
+using System.Xml;
 
 using MySql.Data.MySqlClient;
 
@@ -221,7 +223,7 @@ namespace RSS
             empty.Attributes["class"] = "empty-li";
             noFolder.Controls.Add(empty);
 
-            subscriptions.Controls.Add(noFolder);
+            subscriptions.ContentTemplateContainer.Controls.Add(noFolder);
             result.Close();
 
             command = connection.CreateCommand();
@@ -290,7 +292,7 @@ namespace RSS
                 folders.Controls.Add(folder);
             }
 
-            subscriptions.Controls.Add(folders);
+            subscriptions.ContentTemplateContainer.Controls.Add(folders);
             result.Close();
         }
 
@@ -592,6 +594,98 @@ namespace RSS
             HttpContext.Current.Session["userID"] = null;
             HttpContext.Current.Session["location"] = null;
             HttpContext.Current.Session["feedID"] = null;
+        }
+
+        protected void addSubscription(object sender, EventArgs e)
+        {
+            connection.Open();
+
+            string url = subscriptionURL.Value;
+
+            if(url.StartsWith("http://") == false)
+            {
+                url = String.Concat("http://", url);
+            }
+
+            XmlReader reader = XmlReader.Create(url);
+            XmlDocument doc = new XmlDocument();
+            doc.Load(reader);
+
+            XmlNode name = doc.SelectSingleNode("//channel/title");
+            byte[] icon = new WebClient().DownloadData("http://www.google.com/s2/favicons?domain=" + url);
+
+            command = connection.CreateCommand();
+            command.CommandText = "INSERT INTO Feeds (name, icon) VALUES (@name, @icon)";
+            command.Parameters.AddWithValue("@name", name.InnerText);
+            command.Parameters.AddWithValue("@icon", icon);
+            command.ExecuteNonQuery();
+
+            long feedID = command.LastInsertedId;
+
+            command = connection.CreateCommand();
+            command.CommandText = "INSERT INTO Subscriptions (user_id, feed_id) VALUES (@userID, @feedID)";
+            command.Parameters.AddWithValue("@userID", Session["userID"]);
+            command.Parameters.AddWithValue("@feedID", feedID);
+            command.ExecuteNonQuery();
+
+            XmlNodeList articles = doc.SelectNodes("//item");
+            command = connection.CreateCommand();
+            command.CommandText = "INSERT INTO Articles (feed_id, title, url, author, date, content) VALUES (@feedID, @title, @url, @author, @date, @content)";
+            command.Parameters.AddWithValue("@feedID", feedID);
+            command.Parameters.Add(new MySqlParameter("@title", MySqlDbType.VarChar));
+            command.Parameters.Add(new MySqlParameter("@url", MySqlDbType.VarChar));
+            command.Parameters.Add(new MySqlParameter("@author", MySqlDbType.VarChar));
+            command.Parameters.Add(new MySqlParameter("@date", MySqlDbType.DateTime));
+            command.Parameters.Add(new MySqlParameter("@content", MySqlDbType.MediumText));
+            command.Prepare();
+
+            MySqlCommand unreadCommand = connection.CreateCommand();
+            unreadCommand.CommandText = "INSERT INTO Unread VALUES (@userID, @articleID)";
+            unreadCommand.Parameters.AddWithValue("@userID", Session["userID"]);
+            unreadCommand.Parameters.Add(new MySqlParameter("@articleID", MySqlDbType.UInt32, 10));
+
+            foreach(XmlNode article in articles)
+            {
+                command.Parameters["@title"].Value = article["title"].InnerText;
+                command.Parameters["@url"].Value = article["link"].InnerText;
+                command.Parameters["@author"].Value = null;
+                command.Parameters["@date"].Value = DateTime.Now;
+
+                DateTime date;
+
+                if(DateTime.TryParseExact(article["pubDate"].InnerText, "ddd, dd MMM yyyy HH:mm:ss 'EST'", null, System.Globalization.DateTimeStyles.None, out date) == true)
+                {
+                    command.Parameters["@date"].Value = date;
+                }
+                else
+                {
+                    command.Parameters["@date"].Value = DateTime.Now;
+                }
+
+                command.Parameters["@content"].Value = article["description"].InnerText;
+
+                foreach(XmlNode node in article.ChildNodes)
+                {
+                    if(node.Name.Equals("author") == true)
+                    {
+                        command.Parameters["@author"].Value = node.InnerText;
+                    }
+                }
+
+                command.ExecuteNonQuery();
+
+                unreadCommand.Parameters["@articleID"].Value = command.LastInsertedId;
+                unreadCommand.ExecuteNonQuery();
+            }
+
+            reader.Close();
+
+            subscriptions.ContentTemplateContainer.Controls.Clear();
+            loadSidebar();
+
+            subscriptionURL.Value = "";
+
+            connection.Close();
         }
     }
 }
