@@ -746,12 +746,6 @@ main
 	text-align: center;
 }
 
-main img
-{
-	width: 100%;
-	height: auto;
-}
-
 .home-left,
 .home-right
 {
@@ -782,7 +776,7 @@ main img
 	padding: 10px 10px;
 }
 
-#widgets img
+.full-widget
 {
 	width: 100%;
 	height: auto;
@@ -919,6 +913,16 @@ fieldset select
 	text-align: center;
 }
 
+.form-error-new
+{
+	display: inline-block;
+	width: 100%;
+	margin-bottom: 5px;
+	font-size: 14px;
+	color: #DF3E3E;
+	text-align: center;
+}
+
 #fullscreen
 {
 	padding: 0px 7px 1px 7px !important;
@@ -951,4 +955,43 @@ fieldset select
 	margin-top: 4px;
 }
 
+#weather
+{
+    margin-bottom: 15px;
+}
 
+#refreshWeather
+{
+    display: inline-block;
+    float: right;
+    font-size: 14px;
+    padding: 3px 6px;
+}
+
+.weather-title
+{
+    display: block;
+    float: left;
+    font-size: 16px;
+    font-weight: bold;
+    padding-bottom: 5px;
+}
+
+.city
+{
+    display: block;
+    float: left;
+    margin-top: 1px;
+    font-size: 13px;
+    font-weight: normal;
+    border: none;
+}
+
+.temperature
+{
+    display: inline-block;
+    vertical-align: top;
+    font-size: 20px;
+    font-weight: bold;
+    padding-top: 4px;
+}

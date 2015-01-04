@@ -129,9 +129,15 @@ $(document).ready(function()
 
 function validateEmail(email)
 {
-	var regex = /^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$/;
+    var regex = /^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$/;
 
 	return (regex.test(email) == true);
+}
+
+function validate(source, arguments)
+{
+    console.log("qwe");
+    arguments.isValid = false;
 }
 
 function hideOverlay()

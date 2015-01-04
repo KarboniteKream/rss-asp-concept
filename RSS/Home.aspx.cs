@@ -22,6 +22,10 @@ namespace RSS
         private string unreadCount = "";
         private string connectionString = "server=3020f0c4-873a-49b6-b007-a3ff00933a9e.mysql.sequelizer.com;database=db3020f0c4873a49b6b007a3ff00933a9e;userid=evvbdlzgyodaumqz;password=iGSHBCF2WwpzrmRXjhhCbUTiDfjnk3c3MvECQzWQt8pTnD7VZsZNwi3wVHevstQ3";
 
+        private UpdatePanel weather = null;
+        private TextBox location = null;
+        private Button refreshWeather = null;
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if(Session["userID"] == null)
@@ -422,11 +426,34 @@ namespace RSS
             
             HtmlGenericControl widgets = new HtmlGenericControl("div");
             widgets.ID = "widgets";
+
+            refreshWeather = new Button();
+            refreshWeather.ID = "refreshWeather";
+            refreshWeather.Attributes["class"] = "button-secondary";
+            refreshWeather.Text = "Refresh";
+            refreshWeather.Click += loadWeather;
+
+            weather = new UpdatePanel();
+            weather.ID = "weather";
+            AsyncPostBackTrigger trigger = new AsyncPostBackTrigger();
+            trigger.ControlID = "refreshWeather";
+            trigger.EventName = "Click";
+            weather.Triggers.Add(trigger);
+            
+            location = new TextBox();
+            location.Attributes["class"] = "city";
+            location.Text = "Ljubljana, Slovenia";
+
+            loadWeather(null, null);
+            widgets.Controls.Add(weather);
+
             HtmlImage xkcd = new HtmlImage();
             xkcd.Src = "http://imgs.xkcd.com/comics/time.png";
+            xkcd.Attributes["class"] = "full-widget";
             xkcd.Attributes["title"] = "The end.";
             xkcd.Alt = "Current time is unknown.";
             widgets.Controls.Add(xkcd);
+
             homeLeft.Controls.Add(widgets);
 
             reader.Controls.Add(homeLeft);
@@ -686,6 +713,39 @@ namespace RSS
             subscriptionURL.Value = "";
 
             connection.Close();
+        }
+
+        protected void loadWeather(object sender, EventArgs e)
+        {
+            weather.ContentTemplateContainer.Controls.Clear();
+            weather.ContentTemplateContainer.Controls.Add(refreshWeather);
+
+            XmlReader reader = XmlReader.Create("http://www.myweather2.com/developer/forecast.ashx?uac=cOuhT9cxw6&output=xml&temp_unit=c&ws_unit=kph&query=46.056947,14.505751");
+            XmlDocument doc = new XmlDocument();
+            doc.Load(reader);
+
+            XmlNode current = doc.SelectSingleNode("//weather/curren_weather");
+
+            HtmlGenericControl title = new HtmlGenericControl("span");
+            title.Attributes["class"] = "weather-title";
+            title.InnerHtml = "Weather ";
+            weather.ContentTemplateContainer.Controls.Add(title);
+            weather.ContentTemplateContainer.Controls.Add(location);
+
+            HtmlGenericControl lineBreak = new HtmlGenericControl("span");
+            lineBreak.Attributes["style"] = "display: block;";
+            weather.ContentTemplateContainer.Controls.Add(lineBreak);
+
+            HtmlImage currImage = new HtmlImage();
+            currImage.Src = "/resources/weather/" + current["weather_code"].InnerText + ".gif";
+            weather.ContentTemplateContainer.Controls.Add(currImage);
+
+            HtmlGenericControl currTemp = new HtmlGenericControl("span");
+            currTemp.Attributes["class"] = "temperature";
+            currTemp.InnerHtml = current["temp"].InnerText + " °" + current["temp_unit"].InnerText.ToUpper();
+            weather.ContentTemplateContainer.Controls.Add(currTemp);
+
+            reader.Close();
         }
     }
 }

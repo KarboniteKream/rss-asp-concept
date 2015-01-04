@@ -24,37 +24,39 @@
 			    </ul>
 			</nav>
 		</header>
-        <div id="main">
-			<div id="sidebar">
-				<span id="new-subscription" class="button-primary block">New subscription</span>
-				<div id="add-subscription">
-					<form action="javascript:;" method="post">
-						<fieldset>
-							<button type="submit" tabindex="2">Add</button>
-							<input type="url" placeholder="subscription URL" tabindex="1"/>
-						</fieldset>
-					</form>
-				</div>
-				<div id="sidebar-content">
-					<div id="menu">
-						<ul>
-							<asp:Panel id="menuItems" runat="server" />
-						</ul>
-					</div>
-                    <asp:Panel id="subscriptions" runat="server" />
-				</div>
-			</div>
-			<div id="content">
-                <div class="header">
-                    <h2>Help</h2>
-                </div>
-				<div id="reader">
-                    <form runat="server">
-                        <asp:ScriptManager ID="scriptManager" runat="server" EnablePageMethods="true" />
+        <form runat="server">
+            <asp:ScriptManager ID="scriptManager" runat="server" EnablePageMethods="true" />
+            <div id="main">
+			    <div id="sidebar">
+				    <span id="new-subscription" class="button-primary block">New subscription</span>
+				    <div id="add-subscription">
+					    <fieldset>
+						    <asp:Button ID="addSubscriptionButton" runat="server" Text="Add" OnClick="addSubscription" tabindex="2" />
+						    <input id="subscriptionURL" placeholder="subscription URL" tabindex="1" runat="server" />
+					    </fieldset>
+				    </div>
+				    <div id="sidebar-content">
+					    <div id="menu">
+						    <ul>
+							    <asp:Panel id="menuItems" runat="server" />
+						    </ul>
+					    </div>
+                        <asp:UpdatePanel id="subscriptions" runat="server">
+                            <Triggers>
+                                <asp:AsyncPostBackTrigger ControlID="addSubscriptionButton" EventName="Click" />
+                            </Triggers>
+                        </asp:UpdatePanel>
+				    </div>
+			    </div>
+			    <div id="content">
+                    <div class="header">
+                        <h2>Help</h2>
+                    </div>
+				    <div id="reader">
                         <div id="banner">work in progress</div>
-                    </form>
-				</div>
-			</div>
-		</div>
+				    </div>
+			    </div>
+		    </div>
+        </form>
     </body>
 </html>

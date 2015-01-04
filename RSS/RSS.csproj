@@ -78,6 +78,7 @@
     <Content Include="resources\kream.png" />
     <Content Include="resources\liked.png" />
     <Content Include="resources\unread.png" />
+    <Content Include="resources\weather\0.gif" />
     <Content Include="scripts\html.sortable.min.js.map" />
     <Content Include="resources\modernpics-webfont.woff" />
     <Content Include="packages.config" />

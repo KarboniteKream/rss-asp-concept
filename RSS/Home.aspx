@@ -24,16 +24,16 @@
 			    </ul>
 			</nav>
 		</header>
-        <div id="main">
-            <div id="sidebar">
-				<span id="new-subscription" class="button-primary block">New subscription</span>
-                <form runat="server">
-                    <asp:ScriptManager ID="scriptManager" runat="server" EnablePageMethods="true" />
-				    <div id="add-subscription">
+        <form runat="server">
+            <asp:ScriptManager ID="scriptManager" runat="server" EnablePageMethods="true" />
+            <div id="main">
+                <div id="sidebar">
+				    <span id="new-subscription" class="button-primary block">New subscription</span>
+                    <div id="add-subscription">
 					    <fieldset>
-							<asp:Button ID="testButton" runat="server" Text="Add" OnClick="addSubscription" tabindex="2" />
-							<input id="subscriptionURL" placeholder="subscription URL" tabindex="1" runat="server" />
-						</fieldset>
+						    <asp:Button ID="addSubscriptionButton" runat="server" Text="Add" OnClick="addSubscription" tabindex="2" />
+						    <input id="subscriptionURL" placeholder="subscription URL" tabindex="1" runat="server" />
+					    </fieldset>
 				    </div>
 				    <div id="sidebar-content">
 					    <div id="menu">
@@ -43,17 +43,17 @@
 					    </div>
                         <asp:UpdatePanel id="subscriptions" runat="server">
                             <Triggers>
-                                <asp:AsyncPostBackTrigger ControlID="testButton" EventName="Click" />
+                                <asp:AsyncPostBackTrigger ControlID="addSubscriptionButton" EventName="Click" />
                             </Triggers>
                         </asp:UpdatePanel>
 				    </div>
-                </form>
-			</div>
-			<div id="content">
-                <asp:Panel id="header" CssClass="header" runat="server" />
-                <asp:Panel id="reader" runat="server" />
-			</div>
-		</div>
+			    </div>
+			    <div id="content">
+                    <asp:Panel id="header" CssClass="header" runat="server" />
+                    <asp:Panel id="reader" runat="server" />
+			    </div>
+		    </div>
+        </form>
 		<div id="overlay" onclick="hideOverlay()"></div>
 		<div id="unsubscribe" class="popup">
 			<div class="header">

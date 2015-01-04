@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using System.Web.Services;
+using System.Xml;
 
 using MySql.Data.MySqlClient;
 
@@ -12,6 +14,12 @@ namespace RSS
 {
     public partial class Settings : System.Web.UI.Page
     {
+        private MySqlConnection connection = null;
+        private MySqlCommand command = null;
+        private MySqlDataReader result = null;
+
+        private string connectionString = "server=3020f0c4-873a-49b6-b007-a3ff00933a9e.mysql.sequelizer.com;database=db3020f0c4873a49b6b007a3ff00933a9e;userid=evvbdlzgyodaumqz;password=iGSHBCF2WwpzrmRXjhhCbUTiDfjnk3c3MvECQzWQt8pTnD7VZsZNwi3wVHevstQ3";
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if(Session["userID"] == null)
@@ -22,7 +30,12 @@ namespace RSS
             Session["location"] = "settings";
             Session["feedID"] = -5;
 
-            MySqlConnection connection = new MySqlConnection("server=3020f0c4-873a-49b6-b007-a3ff00933a9e.mysql.sequelizer.com;database=db3020f0c4873a49b6b007a3ff00933a9e;userid=evvbdlzgyodaumqz;password=iGSHBCF2WwpzrmRXjhhCbUTiDfjnk3c3MvECQzWQt8pTnD7VZsZNwi3wVHevstQ3");
+            connection = new MySqlConnection(connectionString);
+            loadSidebar();
+        }
+
+        private void loadSidebar()
+        {
             connection.Open();
 
             HtmlGenericControl li = new HtmlGenericControl("li");
@@ -45,10 +58,10 @@ namespace RSS
             HtmlGenericControl unread = new HtmlGenericControl("span");
             unread.Attributes["class"] = "badge";
 
-            MySqlCommand command = connection.CreateCommand();
+            command = connection.CreateCommand();
             command.CommandText = "SELECT COUNT(article_id) AS unread FROM Unread WHERE user_id = @userID";
             command.Parameters.AddWithValue("@userID", Session["userID"]);
-            MySqlDataReader result = command.ExecuteReader();
+            result = command.ExecuteReader();
             result.Read();
             unread.InnerText = " " + result.GetString("unread");
             result.Close();
@@ -113,7 +126,7 @@ namespace RSS
             empty.Attributes["class"] = "empty-li";
             noFolder.Controls.Add(empty);
 
-            subscriptions.Controls.Add(noFolder);
+            subscriptions.ContentTemplateContainer.Controls.Add(noFolder);
             result.Close();
 
             command = connection.CreateCommand();
@@ -182,7 +195,7 @@ namespace RSS
                 folders.Controls.Add(folder);
             }
 
-            subscriptions.Controls.Add(folders);
+            subscriptions.ContentTemplateContainer.Controls.Add(folders);
             result.Close();
 
             connection.Close();
@@ -201,6 +214,234 @@ namespace RSS
             HttpContext.Current.Session["userID"] = null;
             HttpContext.Current.Session["location"] = null;
             HttpContext.Current.Session["feedID"] = null;
+        }
+
+        protected void ValidateEmail(object sender, ServerValidateEventArgs args)
+        {
+            if(newEmail.Text.Equals("") == true && confirmEmail.Text.Equals("") == true)
+            {
+                args.IsValid = true;
+                return;
+            }
+
+            if(newEmail.Text.Equals(confirmEmail.Text) == false)
+            {
+                ((CustomValidator)sender).ErrorMessage = "E-mails do not match.";
+                args.IsValid = false;
+                return;
+            }
+
+            connection.Open();
+
+            command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM Users WHERE email = @email";
+            command.Parameters.AddWithValue("@email", newEmail.Text);
+
+            result = command.ExecuteReader();
+            bool exists = result.HasRows;
+            result.Close();
+
+            if(exists == true)
+            {
+                connection.Close();
+
+                ((CustomValidator)sender).ErrorMessage = "This e-mail is already in use.";
+                args.IsValid = false;
+                return;
+            }
+
+            command = connection.CreateCommand();
+            command.CommandText = "UPDATE Users SET email = @email WHERE id = @userID";
+            command.Parameters.AddWithValue("@email", newEmail.Text);
+            command.Parameters.AddWithValue("@userID", Session["userID"]);
+            command.ExecuteNonQuery();
+
+            connection.Close();
+            args.IsValid = true;
+        }
+
+        protected void ValidatePassword(object sender, ServerValidateEventArgs args)
+        {
+            if(currentPassword.Text.Equals("") == true && newPassword.Text.Equals("") == true && confirmPassword.Text.Equals("") == true || newPassword.Text.Equals("") == true && confirmPassword.Text.Equals("") == true)
+            {
+                args.IsValid = true;
+                return;
+            }
+
+            if(newPassword.Text.Equals(confirmPassword.Text) == false)
+            {
+                ((CustomValidator)sender).ErrorMessage = "Passwords do not match.";
+                args.IsValid = false;
+                return;
+            }
+
+            connection.Open();
+
+            command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM Users WHERE id = @userID AND password = SHA1(@password)";
+            command.Parameters.AddWithValue("@userID", Session["userID"]);
+            command.Parameters.AddWithValue("@password", currentPassword.Text);
+
+            result = command.ExecuteReader();
+            bool correct = result.HasRows;
+            result.Close();
+
+            if(correct == false)
+            {
+                connection.Close();
+
+                ((CustomValidator)sender).ErrorMessage = "The current password is incorrect.";
+                args.IsValid = false;
+                return;
+            }
+
+            command = connection.CreateCommand();
+            command.CommandText = "UPDATE Users SET password = SHA1(@password) WHERE id = @userID";
+            command.Parameters.AddWithValue("@password", newPassword.Text);
+            command.Parameters.AddWithValue("@userID", Session["userID"]);
+            command.ExecuteNonQuery();
+
+            connection.Close();
+            args.IsValid = true;
+        }
+
+        protected void ValidateDeleteAccount(object sender, ServerValidateEventArgs args)
+        {
+            if(deletePassword.Text.Equals("") == true && confirmDeletePassword.Text.Equals("") == true)
+            {
+                args.IsValid = true;
+                return;
+            }
+
+            if(deletePassword.Text.Equals(confirmDeletePassword.Text) == false)
+            {
+                ((CustomValidator)sender).ErrorMessage = "Passwords do not match.";
+                args.IsValid = false;
+                return;
+            }
+
+            connection.Open();
+
+            command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM Users WHERE id = @userID AND password = SHA1(@password)";
+            command.Parameters.AddWithValue("@userID", Session["userID"]);
+            command.Parameters.AddWithValue("@password", deletePassword.Text);
+
+            result = command.ExecuteReader();
+            bool correct = result.HasRows;
+            result.Close();
+
+            if(correct == false)
+            {
+                connection.Close();
+
+                ((CustomValidator)sender).ErrorMessage = "The current password is incorrect.";
+                args.IsValid = false;
+                return;
+            }
+
+            command = connection.CreateCommand();
+            command.CommandText = "DELETE FROM Users WHERE id = @userID";
+            command.Parameters.AddWithValue("@userID", Session["userID"]);
+            command.ExecuteNonQuery();
+
+            connection.Close();
+            args.IsValid = true;
+
+            signOut();
+            Response.Redirect("/");
+        }
+
+        protected void addSubscription(object sender, EventArgs e)
+        {
+            connection.Open();
+
+            string url = subscriptionURL.Value;
+
+            if(url.StartsWith("http://") == false)
+            {
+                url = String.Concat("http://", url);
+            }
+
+            XmlReader reader = XmlReader.Create(url);
+            XmlDocument doc = new XmlDocument();
+            doc.Load(reader);
+
+            XmlNode name = doc.SelectSingleNode("//channel/title");
+            byte[] icon = new WebClient().DownloadData("http://www.google.com/s2/favicons?domain=" + url);
+
+            command = connection.CreateCommand();
+            command.CommandText = "INSERT INTO Feeds (name, icon) VALUES (@name, @icon)";
+            command.Parameters.AddWithValue("@name", name.InnerText);
+            command.Parameters.AddWithValue("@icon", icon);
+            command.ExecuteNonQuery();
+
+            long feedID = command.LastInsertedId;
+
+            command = connection.CreateCommand();
+            command.CommandText = "INSERT INTO Subscriptions (user_id, feed_id) VALUES (@userID, @feedID)";
+            command.Parameters.AddWithValue("@userID", Session["userID"]);
+            command.Parameters.AddWithValue("@feedID", feedID);
+            command.ExecuteNonQuery();
+
+            XmlNodeList articles = doc.SelectNodes("//item");
+            command = connection.CreateCommand();
+            command.CommandText = "INSERT INTO Articles (feed_id, title, url, author, date, content) VALUES (@feedID, @title, @url, @author, @date, @content)";
+            command.Parameters.AddWithValue("@feedID", feedID);
+            command.Parameters.Add(new MySqlParameter("@title", MySqlDbType.VarChar));
+            command.Parameters.Add(new MySqlParameter("@url", MySqlDbType.VarChar));
+            command.Parameters.Add(new MySqlParameter("@author", MySqlDbType.VarChar));
+            command.Parameters.Add(new MySqlParameter("@date", MySqlDbType.DateTime));
+            command.Parameters.Add(new MySqlParameter("@content", MySqlDbType.MediumText));
+            command.Prepare();
+
+            MySqlCommand unreadCommand = connection.CreateCommand();
+            unreadCommand.CommandText = "INSERT INTO Unread VALUES (@userID, @articleID)";
+            unreadCommand.Parameters.AddWithValue("@userID", Session["userID"]);
+            unreadCommand.Parameters.Add(new MySqlParameter("@articleID", MySqlDbType.UInt32, 10));
+
+            foreach(XmlNode article in articles)
+            {
+                command.Parameters["@title"].Value = article["title"].InnerText;
+                command.Parameters["@url"].Value = article["link"].InnerText;
+                command.Parameters["@author"].Value = null;
+                command.Parameters["@date"].Value = DateTime.Now;
+
+                DateTime date;
+
+                if(DateTime.TryParseExact(article["pubDate"].InnerText, "ddd, dd MMM yyyy HH:mm:ss 'EST'", null, System.Globalization.DateTimeStyles.None, out date) == true)
+                {
+                    command.Parameters["@date"].Value = date;
+                }
+                else
+                {
+                    command.Parameters["@date"].Value = DateTime.Now;
+                }
+
+                command.Parameters["@content"].Value = article["description"].InnerText;
+
+                foreach(XmlNode node in article.ChildNodes)
+                {
+                    if(node.Name.Equals("author") == true)
+                    {
+                        command.Parameters["@author"].Value = node.InnerText;
+                    }
+                }
+
+                command.ExecuteNonQuery();
+
+                unreadCommand.Parameters["@articleID"].Value = command.LastInsertedId;
+                unreadCommand.ExecuteNonQuery();
+            }
+
+            reader.Close();
+
+            subscriptions.ContentTemplateContainer.Controls.Clear();
+            loadSidebar();
+
+            subscriptionURL.Value = "";
+
+            connection.Close();
         }
     }
 }

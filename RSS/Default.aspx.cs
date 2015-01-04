@@ -4,6 +4,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using System.Web.Services;
 
 using MySql.Data.MySqlClient;
 
@@ -25,14 +26,6 @@ namespace RSS
             loadFeatured();
 
             connection.Close();
-        }
-
-        protected void qwe_Click(object sender, EventArgs e)
-        {
-            Session["userID"] = 1;
-            Session["location"] = "home";
-            Session["feedID"] = -1;
-            Response.Redirect("Home.aspx");
         }
 
         private void loadFeatured()
@@ -84,6 +77,96 @@ namespace RSS
             }
 
             result.Close();
+        }
+
+        protected void ValidateSignIn(object sender, ServerValidateEventArgs args)
+        {
+            if(email.Text.Equals("") == true || password.Text.Equals("") == true)
+            {
+                args.IsValid = true;
+                return;
+            }
+
+            connection.Open();
+
+            command = connection.CreateCommand();
+            command.CommandText = "SELECT id FROM Users WHERE email = @email AND password = SHA1(@password)";
+            command.Parameters.AddWithValue("@email", email.Text);
+            command.Parameters.AddWithValue("@password", password.Text);
+            result = command.ExecuteReader();
+
+            if(result.HasRows == false)
+            {
+                result.Close();
+                connection.Close();
+
+                ((CustomValidator)sender).ErrorMessage = "Incorrect e-mail/password.";
+                args.IsValid = false;
+                return;
+            }
+
+            result.Read();
+            Session["userID"] = result.GetInt32("id");
+            Session["location"] = "home";
+            Session["feedID"] = -1;
+
+            result.Close();
+            connection.Close();
+
+            args.IsValid = true;
+            Response.Redirect("/Home.aspx");
+        }
+
+        protected void ValidateRegister(object sender, ServerValidateEventArgs args)
+        {
+            if(realName.Text.Equals("") == true || newEmail.Text.Equals("") == true || newPassword1.Text.Equals("") == true || newPassword2.Text.Equals("") == true)
+            {
+                ((CustomValidator)sender).ErrorMessage = "";
+                args.IsValid = false;
+                return;
+            }
+
+            if(newPassword1.Text.Equals(newPassword2.Text) == false)
+            {
+                ((CustomValidator)sender).ErrorMessage = "Passwords do not match.";
+                args.IsValid = false;
+                return;
+            }
+
+            connection.Open();
+
+            command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM Users WHERE email = @email";
+            command.Parameters.AddWithValue("@email", newEmail.Text);
+
+            result = command.ExecuteReader();
+            bool exists = result.HasRows;
+            result.Close();
+
+            if(exists == true)
+            {
+                connection.Close();
+
+                ((CustomValidator)sender).ErrorMessage = "This e-mail is already in use.";
+                args.IsValid = false;
+                return;
+            }
+
+            command = connection.CreateCommand();
+            command.CommandText = "INSERT INTO Users (real_name, email, password) VALUES (@realName, @email, SHA1(@password))";
+            command.Parameters.AddWithValue("@realName", realName.Text);
+            command.Parameters.AddWithValue("@email", newEmail.Text);
+            command.Parameters.AddWithValue("@password", newPassword1.Text);
+            command.ExecuteNonQuery();
+
+            Session["userID"] = command.LastInsertedId;
+            Session["location"] = "home";
+            Session["feedID"] = -1;
+
+            connection.Close();
+
+            args.IsValid = true;
+            Response.Redirect("/Home.aspx");
         }
     }
 }

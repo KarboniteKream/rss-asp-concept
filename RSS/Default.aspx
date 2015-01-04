@@ -23,38 +23,56 @@
 			</nav>
 		</header>
         <main>
-            <form runat="server">
-                <asp:Button ID="qwe" runat="server" OnClick="qwe_Click" />
-                <div id="banner">the next-generation <span class="rss">RSS</span> reader</div>
-		        <div id="landing">
-			        <div>
-				        <div class="header">
-					        <span id="fullscreen" class="button-primary">v</span>
-					        <h2>Featured articles</h2>
-				        </div>
-					    <asp:Panel id="featured" runat="server" />
-			        </div>
-		        </div>
-            </form>
+            <div id="banner">the next-generation <span class="rss">RSS</span> reader</div>
+		    <div id="landing">
+			    <div>
+				    <div class="header">
+					    <span id="fullscreen" class="button-primary">v</span>
+					    <h2>Featured articles</h2>
+				    </div>
+					<asp:Panel id="featured" runat="server" />
+			    </div>
+		    </div>
 		</main>
         <div id="overlay" onclick="hideOverlay()"></div>
-        <div id="sign-in" class="popup">
-			<div class="header">
-				<span class="button-secondary" onclick="hideOverlay()">×</span>
-				<h3>Sign in</h3>
-			</div>
-            <form>
-
-            </form>
-		</div>
-        <div id="register" class="popup">
-			<div class="header">
-				<span class="button-secondary" onclick="hideOverlay()">×</span>
-				<h3>Register</h3>
-			</div>
-			<form>
-
-			</form>
-		</div>
+        <form runat="server">
+            <div id="sign-in" class="popup">
+			    <div class="header">
+				    <span class="button-secondary" onclick="hideOverlay()">×</span>
+				    <h3>Sign in</h3>
+			    </div>
+                <fieldset>
+                    <asp:TextBox id="email" placeholder="e-mail" TextMode="Email" tabindex="1" runat="server" />
+                    <br />
+                    <asp:TextBox id="password" placeholder="password" TextMode="Password" tabindex="2" runat="server" />
+                    <br />
+                    <asp:CustomValidator CssClass="form-error" ErrorMessage="Incorrect e-mail/password." OnServerValidate="ValidateSignIn" runat="server" />
+                    <button type="submit" tabindex="4">Sign in</button>
+                    <label for="rememberMe">
+                        <asp:CheckBox id="rememberMe" tabindex="3"  runat="server"/>
+                        Remember me
+                    </label>
+                </fieldset>
+		    </div>
+            <div id="register" class="popup">
+			    <div class="header">
+				    <span class="button-secondary" onclick="hideOverlay()">×</span>
+				    <h3>Register</h3>
+			    </div>
+			    <fieldset>
+                    <asp:TextBox id="realName" placeholder="real name" runat="server" />
+                    <br />
+                    <asp:TextBox id="newEmail" placeholder="e-mail" TextMode="Email" runat="server" />
+                    <br />
+                    <br />
+                    <asp:TextBox id="newPassword1" placeholder="password" TextMode="Password" runat="server" />
+                    <br />
+                    <asp:TextBox id="newPassword2" CssClass="confirm-password" placeholder="confirm password" TextMode="Password" runat="server"></asp:TextBox>
+                    <br />
+                    <asp:CustomValidator CssClass="form-error" ErrorMessage="This e-mail is already registered." OnServerValidate="ValidateRegister" runat="server" />
+                    <button type="submit">Register</button>
+			    </fieldset>
+		    </div>
+        </form>
     </body>
 </html>
