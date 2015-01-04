@@ -109,6 +109,7 @@ namespace RSS
             Session["userID"] = result.GetInt32("id");
             Session["location"] = "home";
             Session["feedID"] = -1;
+            Session["city"] = "Ljubljana, Slovenia";
 
             result.Close();
             connection.Close();
@@ -162,6 +163,7 @@ namespace RSS
             Session["userID"] = command.LastInsertedId;
             Session["location"] = "home";
             Session["feedID"] = -1;
+            Session["city"] = "Ljubljana, Slovenia";
 
             connection.Close();
 

@@ -442,7 +442,7 @@ namespace RSS
             
             location = new TextBox();
             location.Attributes["class"] = "city";
-            location.Text = "Ljubljana, Slovenia";
+            location.Text = Session["city"].ToString();
 
             loadWeather(null, null);
             widgets.Controls.Add(weather);
@@ -625,6 +625,11 @@ namespace RSS
 
         protected void addSubscription(object sender, EventArgs e)
         {
+            if(subscriptionURL.Value.Equals("") == true)
+            {
+                return;
+            }
+
             connection.Open();
 
             string url = subscriptionURL.Value;
@@ -720,20 +725,30 @@ namespace RSS
             weather.ContentTemplateContainer.Controls.Clear();
             weather.ContentTemplateContainer.Controls.Add(refreshWeather);
 
-            XmlReader reader = XmlReader.Create("http://www.myweather2.com/developer/forecast.ashx?uac=cOuhT9cxw6&output=xml&temp_unit=c&ws_unit=kph&query=46.056947,14.505751");
+            Session["city"] = location.Text;
+
+            XmlReader reader = XmlReader.Create("https://maps.googleapis.com/maps/api/geocode/xml?address=" + Session["city"].ToString().Replace(" ", "%20") + "&sensor=false&key=AIzaSyAotyTm2LWNdS9xwF7dx5n39NzsgClCKs0");
             XmlDocument doc = new XmlDocument();
             doc.Load(reader);
+            XmlNode coordinates = doc.SelectSingleNode("//GeocodeResponse/result/geometry/location");
+            string url = "http://www.myweather2.com/developer/forecast.ashx?uac=cOuhT9cxw6&output=xml&temp_unit=c&ws_unit=kph&query=" + coordinates["lat"].InnerText + "," + coordinates["lng"].InnerText;
+            reader.Close();
 
+            reader = XmlReader.Create(url);
+            doc = new XmlDocument();
+            doc.Load(reader);
             XmlNode current = doc.SelectSingleNode("//weather/curren_weather");
 
             HtmlGenericControl title = new HtmlGenericControl("span");
             title.Attributes["class"] = "weather-title";
             title.InnerHtml = "Weather ";
             weather.ContentTemplateContainer.Controls.Add(title);
+
+            location.Text = Session["city"].ToString();
             weather.ContentTemplateContainer.Controls.Add(location);
 
             HtmlGenericControl lineBreak = new HtmlGenericControl("span");
-            lineBreak.Attributes["style"] = "display: block;";
+            lineBreak.Attributes["class"] = "break";
             weather.ContentTemplateContainer.Controls.Add(lineBreak);
 
             HtmlImage currImage = new HtmlImage();
@@ -744,6 +759,23 @@ namespace RSS
             currTemp.Attributes["class"] = "temperature";
             currTemp.InnerHtml = current["temp"].InnerText + " °" + current["temp_unit"].InnerText.ToUpper();
             weather.ContentTemplateContainer.Controls.Add(currTemp);
+
+            XmlNode tomorrow = doc.SelectSingleNode("//weather/forecast");
+            XmlNode tomorrowCode = doc.SelectSingleNode("//weather/forecast/day");
+
+            HtmlGenericControl tomorrowLabel = new HtmlGenericControl("span");
+            tomorrowLabel.Attributes["class"] = "temperature-label";
+            tomorrowLabel.InnerHtml = "Tomorrow:";
+            weather.ContentTemplateContainer.Controls.Add(tomorrowLabel);
+
+            HtmlImage tomorowImage = new HtmlImage();
+            tomorowImage.Src = "/resources/weather/" + tomorrowCode["weather_code"].InnerText + ".gif";
+            weather.ContentTemplateContainer.Controls.Add(tomorowImage);
+
+            HtmlGenericControl tomorrowTemp = new HtmlGenericControl("span");
+            tomorrowTemp.Attributes["class"] = "temperature";
+            tomorrowTemp.InnerHtml = tomorrow["day_max_temp"].InnerText + " °" + tomorrow["temp_unit"].InnerText.ToUpper();
+            weather.ContentTemplateContainer.Controls.Add(tomorrowTemp);
 
             reader.Close();
         }
