@@ -356,7 +356,7 @@ namespace RSS
             connection.Open();
 
             command = connection.CreateCommand();
-            command.CommandText = "SELECT f.id, f.name, s.folder FROM Subscriptions AS s JOIN Feeds f ON s.feed_id = f.id WHERE s.user_id = @userID";
+            command.CommandText = "SELECT f.id, f.name, s.folder FROM Subscriptions AS s JOIN Feeds f ON s.feed_id = f.id WHERE s.user_id = @userID ORDER BY f.name";
             command.Parameters.AddWithValue("@userID", Session["userID"]);
 
             MySqlDataAdapter adapter = new MySqlDataAdapter(command);

@@ -747,7 +747,7 @@ namespace RSS
             weather.ContentTemplateContainer.Controls.Add(currImage);
 
             HtmlGenericControl currTemp = new HtmlGenericControl("span");
-            currTemp.Attributes["class"] = "temperature";
+            currTemp.Attributes["class"] = "temperature temperature-today";
             currTemp.InnerHtml = current["temp"].InnerText + " °" + current["temp_unit"].InnerText.ToUpper();
             weather.ContentTemplateContainer.Controls.Add(currTemp);
 

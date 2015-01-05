@@ -52,16 +52,16 @@
                         <h2>Manage subscriptions</h2>
                     </div>
                     <div id="reader">
-                        <asp:GridView ID="subscriptionsGV" DataKeyNames="id" OnRowEditing="subscriptionsGV_RowEditing" OnRowCancelingEdit="subscriptionsGV_RowCancelingEdit" OnRowUpdating="subscriptionsGV_RowUpdating" runat="server" AutoGenerateColumns="False">
+                        <asp:GridView ID="subscriptionsGV" BorderStyle="None" GridLines="None" DataKeyNames="id" OnRowEditing="subscriptionsGV_RowEditing" OnRowCancelingEdit="subscriptionsGV_RowCancelingEdit" OnRowUpdating="subscriptionsGV_RowUpdating" runat="server" AutoGenerateColumns="False">
                             <Columns>
                                 <asp:TemplateField>
                                     <ItemTemplate>
-                                        <asp:CheckBox ID="select" runat="server" />
+                                        <asp:CheckBox ID="select" CssClass="table-checkbox" runat="server" />
                                     </ItemTemplate>
                                 </asp:TemplateField>
-                                <asp:BoundField DataField="name" HeaderText="Feed name" />
-                                <asp:BoundField DataField="folder" HeaderText="Folder" />
-                                <asp:CommandField ItemStyle-CssClass="edit-column" ShowEditButton="True" />
+                                <asp:BoundField HeaderStyle-CssClass="table-header" ItemStyle-CssClass="data-name" DataField="name" HeaderText="Feed name" />
+                                <asp:BoundField HeaderStyle-CssClass="table-header" ItemStyle-CssClass="data-folder" DataField="folder" HeaderText="Folder" />
+                                <asp:CommandField ItemStyle-CssClass="edit-column" ShowEditButton="True" ButtonType="Image" EditImageUrl="/resources/edit.png" CancelImageUrl="/resources/cancel.png" UpdateImageUrl="/resources/update.png" />
                             </Columns>
                         </asp:GridView>
                         <asp:Button CssClass="button-primary subscription-button" OnClick="saveSubscriptions" runat="server" Text="Save" />

@@ -74,10 +74,13 @@
     <Content Include="resources\all.png" />
     <Content Include="resources\arrow-down.png" />
     <Content Include="resources\arrow-right.png" />
+    <Content Include="resources\cancel.png" />
     <Content Include="resources\home.png" />
     <Content Include="resources\kream.png" />
     <Content Include="resources\liked.png" />
+    <Content Include="resources\edit.png" />
     <Content Include="resources\unread.png" />
+    <Content Include="resources\update.png" />
     <Content Include="resources\weather\0.gif" />
     <Content Include="resources\weather\1.gif" />
     <Content Include="resources\weather\10.gif" />
