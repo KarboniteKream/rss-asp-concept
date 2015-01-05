@@ -1,5 +1,4 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Help.aspx.cs" Inherits="RSS.Help" %>
-
 <!DOCTYPE html>
 
 <html>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Net;
 using System.Web;
 using System.Web.UI;
@@ -12,13 +13,14 @@ using MySql.Data.MySqlClient;
 
 namespace RSS
 {
-    public partial class Help : System.Web.UI.Page
+    public partial class Subscriptions : System.Web.UI.Page
     {
         private MySqlConnection connection = null;
         private MySqlCommand command = null;
         private MySqlDataReader result = null;
 
-        private string connectionstring = "server=3020f0c4-873a-49b6-b007-a3ff00933a9e.mysql.sequelizer.com;database=db3020f0c4873a49b6b007a3ff00933a9e;userid=evvbdlzgyodaumqz;password=iGSHBCF2WwpzrmRXjhhCbUTiDfjnk3c3MvECQzWQt8pTnD7VZsZNwi3wVHevstQ3";
+        private string connectionString = "server=3020f0c4-873a-49b6-b007-a3ff00933a9e.mysql.sequelizer.com;database=db3020f0c4873a49b6b007a3ff00933a9e;userid=evvbdlzgyodaumqz;password=iGSHBCF2WwpzrmRXjhhCbUTiDfjnk3c3MvECQzWQt8pTnD7VZsZNwi3wVHevstQ3";
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if(Session["userID"] == null)
@@ -26,26 +28,16 @@ namespace RSS
                 Response.Redirect("/");
             }
 
-            Session["location"] = "help";
-            Session["feedID"] = -6;
+            Session["location"] = "settings";
+            Session["feedID"] = -5;
 
-            connection = new MySqlConnection(connectionstring);
+            connection = new MySqlConnection(connectionString);
             loadSidebar();
-        }
 
-        [WebMethod]
-        public static void changeFeed(string location, string id)
-        {
-            HttpContext.Current.Session["location"] = location;
-            HttpContext.Current.Session["feedID"] = Convert.ToInt32(id);
-        }
-
-        [WebMethod]
-        public static void signOut()
-        {
-            HttpContext.Current.Session["userID"] = null;
-            HttpContext.Current.Session["location"] = null;
-            HttpContext.Current.Session["feedID"] = null;
+            if(IsPostBack == false)
+            {
+                bindData();
+            }
         }
 
         private void loadSidebar()
@@ -215,6 +207,21 @@ namespace RSS
             connection.Close();
         }
 
+        [WebMethod]
+        public static void changeFeed(string location, string id)
+        {
+            HttpContext.Current.Session["location"] = location;
+            HttpContext.Current.Session["feedID"] = Convert.ToInt32(id);
+        }
+
+        [WebMethod]
+        public static void signOut()
+        {
+            HttpContext.Current.Session["userID"] = null;
+            HttpContext.Current.Session["location"] = null;
+            HttpContext.Current.Session["feedID"] = null;
+        }
+
         protected void addSubscription(object sender, EventArgs e)
         {
             connection.Open();
@@ -305,6 +312,100 @@ namespace RSS
             subscriptionURL.Value = "";
 
             connection.Close();
+        }
+
+        protected void unsubscribe(object sender, EventArgs e)
+        {
+            connection.Open();
+
+            command = connection.CreateCommand();
+            command.CommandText = "DELETE FROM Subscriptions WHERE user_id = @userID AND feed_id = @feedID";
+            command.Parameters.AddWithValue("@userID", Session["userID"]);
+            command.Parameters.Add(new MySqlParameter("@feedID", MySqlDbType.Int32));
+            command.Prepare();
+
+            foreach(GridViewRow row in subscriptionsGV.Rows)
+            {
+                CheckBox selected = (CheckBox)row.FindControl("select");
+
+                if(selected.Checked == true)
+                {
+                    command.Parameters["@feedID"].Value = subscriptionsGV.DataKeys[row.RowIndex].Value;
+                    command.ExecuteNonQuery();
+                }
+            }
+
+            connection.Close();
+            bindData();
+
+            menuItems.Controls.Clear();
+            subscriptions.ContentTemplateContainer.Controls.Clear();
+            loadSidebar();
+        }
+
+        protected void saveSubscriptions(object sender, EventArgs e)
+        {
+            Session["location"] = "settings";
+            Session["feedID"] = -5;
+
+            Response.Redirect("/Settings.aspx");
+        }
+
+        private void bindData()
+        {
+            connection.Open();
+
+            command = connection.CreateCommand();
+            command.CommandText = "SELECT f.id, f.name, s.folder FROM Subscriptions AS s JOIN Feeds f ON s.feed_id = f.id WHERE s.user_id = @userID";
+            command.Parameters.AddWithValue("@userID", Session["userID"]);
+
+            MySqlDataAdapter adapter = new MySqlDataAdapter(command);
+            DataTable dataTable = new DataTable();
+            adapter.Fill(dataTable);
+
+            subscriptionsGV.DataSource = dataTable;
+            subscriptionsGV.DataBind();
+
+            connection.Close();
+        }
+
+        protected void subscriptionsGV_RowEditing(object sender, GridViewEditEventArgs e)
+        {
+            subscriptionsGV.EditIndex = e.NewEditIndex;
+            bindData();
+        }
+
+        protected void subscriptionsGV_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
+        {
+            subscriptionsGV.EditIndex = -1;
+            bindData();
+        }
+
+        protected void subscriptionsGV_RowUpdating(object sender, GridViewUpdateEventArgs e)
+        {
+            connection.Open();
+
+            command = connection.CreateCommand();
+            command.CommandText = "UPDATE Feeds SET name = @name WHERE id = @feedID";
+            command.Parameters.AddWithValue("@name", ((TextBox)(subscriptionsGV.Rows[e.RowIndex].Cells[1].Controls[0])).Text);
+            command.Parameters.AddWithValue("@feedID", subscriptionsGV.DataKeys[e.RowIndex].Value);
+            command.ExecuteNonQuery();
+
+            command = connection.CreateCommand();
+            command.CommandText = "UPDATE Subscriptions SET folder = @folder WHERE user_id = @userID AND feed_id = @feedID";
+            command.Parameters.AddWithValue("@folder", ((TextBox)(subscriptionsGV.Rows[e.RowIndex].Cells[2].Controls[0])).Text);
+            command.Parameters.AddWithValue("@userID", Session["userID"]);
+            command.Parameters.AddWithValue("@feedID", subscriptionsGV.DataKeys[e.RowIndex].Value);
+            command.ExecuteNonQuery();
+
+            connection.Close();
+
+            subscriptionsGV.EditIndex = -1;
+            bindData();
+
+            menuItems.Controls.Clear();
+            subscriptions.ContentTemplateContainer.Controls.Clear();
+            loadSidebar();
         }
     }
 }

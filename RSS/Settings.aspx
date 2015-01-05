@@ -97,7 +97,8 @@
 							    </div>
 						    </div>
 						    <div>
-							    <span id="save-settings" class="button-primary block">Save</span>
+							    <span class="button-primary block settings-button">Save</span>
+                                <a id="manage-subscriptions" class="button-secondary settings-button" href="Subscriptions.aspx">Manage subscriptions</a>
 						    </div>
 					    </div>
                         <div id="account-content" class="home-right">

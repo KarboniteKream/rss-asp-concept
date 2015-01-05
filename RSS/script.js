@@ -134,12 +134,6 @@ function validateEmail(email)
 	return (regex.test(email) == true);
 }
 
-function validate(source, arguments)
-{
-    console.log("qwe");
-    arguments.isValid = false;
-}
-
 function hideOverlay()
 {
 	$("#overlay").fadeOut("fast");
